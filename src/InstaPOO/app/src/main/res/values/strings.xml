@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">SearchIMG</string>
+    <string name="takebtn">Take a picture</string>
+    <string name="choosebtn">Choose picture from gallery</string>
+    <string name="applyflt">Send Image</string>
+</resources>
