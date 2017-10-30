@@ -1,12 +1,18 @@
 package searchimg.andrey.com.searchimg;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -37,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.checkAndRequestPermissions();
+        boolean isConnected = isNetworkAvailable();
+        if(!isConnected){
+            NotConnectedDialogBox();
+        }
         imageview = (ImageView)findViewById(R.id.imageViewMain);
         File folder = new File(Environment.getExternalStorageDirectory() + "/SearchIMG/");
         if(!folder.exists())
@@ -50,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
         int storagePermission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+        int internetPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_NETWORK_STATE);
+
+        int conectionPermission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.INTERNET);
+
         List<String> listPermissionsNeeded = new ArrayList<>();
 
         if (storagePermission != PackageManager.PERMISSION_GRANTED) {
@@ -59,12 +75,48 @@ public class MainActivity extends AppCompatActivity {
         if (permissionCAMERA != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.CAMERA);
         }
+        if(internetPermission != PackageManager.PERMISSION_GRANTED){
+            listPermissionsNeeded.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        }
+        if(conectionPermission != PackageManager.PERMISSION_GRANTED){
+            listPermissionsNeeded.add(Manifest.permission.INTERNET);
+        }
         if (!listPermissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(this,
                     listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), PERMISSIONS_REQUEST_CODE);
             return false;
         }
         return true;
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private void NotConnectedDialogBox(){
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("Connection to internet needed!")
+                .setMessage("This app uses internet conection, please make sure you are connected!!")
+                .setPositiveButton(android.R.string.ok , new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Does something if yes
+                    }
+                })
+                /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing hola :V
+                    }
+                })*/
+                .setIcon(android.R.drawable.alert_light_frame)
+                .show();
     }
 
     public void takepic(View view){
