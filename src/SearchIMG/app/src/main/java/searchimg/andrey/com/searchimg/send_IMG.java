@@ -77,7 +77,7 @@ public class send_IMG extends MainActivity {
                 })
                 /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
+                        // do nothing hola :V
                     }
                 })*/
                 .setIcon(android.R.drawable.ic_dialog_info)
