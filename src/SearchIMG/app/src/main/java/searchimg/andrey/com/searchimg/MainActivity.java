@@ -17,6 +17,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "Esta iniciando");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.checkAndRequestPermissions();
@@ -122,8 +124,6 @@ public class MainActivity extends AppCompatActivity {
     public void takepic(View view){
         Log.d(TAG, "Está entrando en la función");
 
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
         String df = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
         String newPicFile = "JPEG_"+ df + ".jpg";
@@ -131,8 +131,13 @@ public class MainActivity extends AppCompatActivity {
         File outFile = new File(outPath);
 
         mCameraFileName = outFile.toString();
-        Uri outuri = Uri.fromFile(outFile);
+        //Uri outuri = Uri.fromFile(outFile);
         Log.d(TAG, "Se creó el nuevo archivo");
+
+        String authorities = getApplicationContext().getPackageName() + ".fileprovider";
+        Uri outuri = FileProvider.getUriForFile(this, authorities, outFile);
+
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outuri);
         Log.d(TAG, "Se va a iniciar la cámara");
 
