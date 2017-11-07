@@ -1,15 +1,18 @@
 package searchimg.andrey.com.searchimg;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -20,39 +23,48 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import static android.app.PendingIntent.getActivity;
 
 /**
  * Created by torre on 10/29/2017.
  */
 
 public class send_IMG extends MainActivity implements ISend {
-    protected ImageView preview;
     protected Bitmap bitmapcopy;
-    private String encodedIMG;
-    ImageView imageview1;
-    DefaultHttpClient httpclient = new DefaultHttpClient();
-    String serverURL = "http://192.168.1.124:49491/api/Request/1";
+    protected String encodedIMG;
+    private ImageView imageview1;
+    private TextView txt;
+    //private String serverURL = "http://192.168.43.211:10491/api/Request/1";
+    private String serverURL = "http://192.168.43.211:10491/api/Request";
+    //private String serverURL = "https://jsonparsingdemo-cec5b.firebaseapp.com/jsonData/moviesDemoList.txt";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.send_img);
         imageview1 = findViewById(R.id.imageView1);
-        encodedIMG = EncodeImage(bitmap);
-        try{
-            sendRequest();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        if(bitmap != null)
+            encodedIMG = EncodeImage(bitmap);
+        txt = (TextView) findViewById(R.id.textView);
+        new JSONtask().execute(serverURL);
     }
 
     private String getFileNameJPG(){
@@ -67,7 +79,7 @@ public class send_IMG extends MainActivity implements ISend {
 
         String fname = getFileNameJPG();
 
-        File myDir = new File(Environment.getExternalStorageDirectory() + "/InstaPOO/");
+        File myDir = new File(Environment.getExternalStorageDirectory() + "/SearchIMG/");
         myDir.mkdirs();
 
         File file = new File (myDir, fname);
@@ -79,23 +91,20 @@ public class send_IMG extends MainActivity implements ISend {
             out.flush();
             out.close();
             galleryAddPic(myDir.getAbsolutePath());
-            saveIMGdiagBox();
+            diagBox("Saved!", "The image has been saved");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void saveIMGdiagBox(){
+    @TargetApi(21)
+    private void diagBox(String str1, String str2) {
         AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
-        builder.setTitle("Image Saved!")
-                .setMessage("The image has been saved")
-                .setPositiveButton(android.R.string.ok , new DialogInterface.OnClickListener() {
+        builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog);
+        builder.setTitle(str1)
+                .setMessage(str2)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // Does something if yes
                     }
@@ -107,56 +116,6 @@ public class send_IMG extends MainActivity implements ISend {
                 })*/
                 .setIcon(android.R.drawable.ic_dialog_info)
                 .show();
-    }
-
-    private void DialogBoxHTTPDONE(){
-        AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
-        builder.setTitle("Todos funciona!")
-                .setMessage("Funciono?")
-                .setPositiveButton(android.R.string.ok , new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Does something if yes
-                    }
-                })
-                /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing hola :V
-                    }
-                })*/
-                .setIcon(android.R.drawable.ic_dialog_info)
-                .show();
-    }
-
-    private void DialogBoxHTTPDONENeg(){
-        AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
-        builder.setTitle("Todo NOOOO funciona!")
-                .setMessage("NOOOOO?")
-                .setPositiveButton(android.R.string.ok , new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Does something if yes
-                    }
-                })
-                /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing hola :V
-                    }
-                })*/
-                .setIcon(android.R.drawable.ic_dialog_info)
-                .show();
-    }
-
-    protected void setBitmapView(Bitmap bitmap){
-        preview.setImageBitmap(bitmap);
     }
 
     public String EncodeImage(Bitmap bmp){
@@ -170,29 +129,89 @@ public class send_IMG extends MainActivity implements ISend {
         return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
     }
 
-    public void sendRequest() throws UnsupportedEncodingException, JSONException {
-        HttpResponse httpresponse;
-        HttpPost httppostreq;
-        httppostreq = new HttpPost(serverURL);
-        // Objeto JSON
-        JSONObject JsObject = new JSONObject();
-        // ESTO ESTA DE PRUEBA CAMBIARLO SI NECESARIO
-        JsObject.put(null, encodedIMG);
-        ////////////////////////////////////////
-        StringEntity se = new StringEntity(JsObject.toString());
-        //se.setContentType("application/json;charset=UTF-8");
-        se.setContentType("application/json");
-        httppostreq.setEntity(se);
-        //
-        //Aqui se envia y se recibe la respuesta
-        try {
-            httpresponse = httpclient.execute(httppostreq); //as a  Json object
-            DialogBoxHTTPDONE();
-        } catch (IOException e) {
-            DialogBoxHTTPDONENeg();
-            e.printStackTrace();
-        }
-        //
+    class JSONtask extends AsyncTask<String, String, String>{
 
+        @TargetApi(21)
+        @Override
+        protected String doInBackground(String... urls) {
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(serverURL);
+                connection = (HttpURLConnection)url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setDoInput(true);
+                connection.setDoOutput(true);
+                //connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+                connection.connect();
+
+
+                //POST METHOD
+
+                /*JSONObject postData = new JSONObject();
+                postData.put("image", encodedIMG);
+                String postStr = postData.toString();
+                DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                wr.writeBytes(postStr);
+                wr.flush();
+                wr.close();*/
+
+
+
+
+                //GET MEHTOD CONNETION STREAM
+                InputStream stream = connection.getInputStream();
+                reader = new BufferedReader(new InputStreamReader(stream));
+                StringBuffer buffer = new StringBuffer();
+
+                String line = "";
+                while((line = reader.readLine()) != null){
+                    buffer.append(line);
+                }
+
+
+                String stringBuffer = buffer.toString();
+                /*JSONObject parenObject = new JSONObject(stringBuffer);
+
+                JSONArray parentArray = parenObject.getJSONArray("image");
+
+                String img = null;
+
+                for(int i = 0; i < parentArray.length(); i++){
+                    JSONObject final_object = parentArray.getJSONObject(i);
+
+                    img = final_object.getString("encodedimg");
+                }*/
+
+                return stringBuffer;
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                diagBox("ERROR1", "MalformedURL");
+            } catch (IOException e) {
+                e.printStackTrace();
+                diagBox("ERROR2", "IOException");
+            } finally {
+                if(connection != null)
+                    connection.disconnect();
+                if(reader != null)
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(final String result) {
+            super.onPostExecute(result);
+            txt.setText(result);
+            diagBox("PROCESO TERMINADO", "Se termino el proceso de http");
+        }
     }
 }
+
+
