@@ -39,10 +39,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import static android.app.PendingIntent.getActivity;
-
 /**
  * Created by torre on 10/29/2017.
  */
@@ -53,8 +49,8 @@ public class send_IMG extends MainActivity implements ISend {
     private ImageView imageview1;
     private TextView txt;
     //private String serverURL = "http://192.168.43.211:10491/api/Request/1";
-    private String serverURL = "http://192.168.43.211:10491/api/Request";
-    //private String serverURL = "https://jsonparsingdemo-cec5b.firebaseapp.com/jsonData/moviesDemoList.txt";
+    //private String serverURL = "http://192.168.43.211:10491/api/Request";
+    private String serverURL = "https://jsonparsingdemo-cec5b.firebaseapp.com/jsonData/moviesDemoList.txt";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "Esta iniciando");
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.Mycolor));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.checkAndRequestPermissions();
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             folder.mkdirs();
     }
 
-    private boolean checkAndRequestPermissions() {
+    public boolean checkAndRequestPermissions() {
         int permissionCAMERA = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA);
 
@@ -91,20 +92,16 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean isNetworkAvailable() {
+    public boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    private void NotConnectedDialogBox(){
+    public void NotConnectedDialogBox(){
         AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
+        builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog);
         builder.setTitle("Connection to internet needed!")
                 .setMessage("This app uses internet conection, please make sure you are connected!!")
                 .setPositiveButton(android.R.string.ok , new DialogInterface.OnClickListener() {
@@ -187,12 +184,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected void galleryAddPic(String path) {
+    protected boolean galleryAddPic(String path) {
+        try{
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(path);
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         sendBroadcast(mediaScanIntent);
+        return true;}
+        catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public void changelayout(View view) {
