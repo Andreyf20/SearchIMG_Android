@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        /*Unit test Mock activeNetworkInfo
+        NetworkInfo activeNetworkInfo = null;*/
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
@@ -119,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void takepic(View view){
-        Log.d(TAG, "Está entrando en la función");
 
         String df = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
@@ -128,15 +129,12 @@ public class MainActivity extends AppCompatActivity {
         File outFile = new File(outPath);
 
         mCameraFileName = outFile.toString();
-        //Uri outuri = Uri.fromFile(outFile);
-        Log.d(TAG, "Se creó el nuevo archivo");
 
         String authorities = getApplicationContext().getPackageName() + ".fileprovider";
         Uri outuri = FileProvider.getUriForFile(this, authorities, outFile);
 
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outuri);
-        Log.d(TAG, "Se va a iniciar la cámara");
 
         startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
     }
@@ -150,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "Está entrando en la función de onactivityresult");
         if(resultCode == RESULT_OK && requestCode == CAMERA_REQUEST_CODE) {
             Uri uri = null;
             if (data != null) {

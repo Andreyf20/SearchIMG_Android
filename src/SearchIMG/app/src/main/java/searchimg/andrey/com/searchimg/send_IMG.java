@@ -82,7 +82,6 @@ public class send_IMG extends MainActivity implements ISend {
         if (file.exists ()) file.delete ();
         try {
             FileOutputStream out = new FileOutputStream(file);
-            //bitmapcopy.compress(Bitmap.CompressFormat.JPEG, 100, out);
             bitmapcopy.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
             out.close();
@@ -94,7 +93,6 @@ public class send_IMG extends MainActivity implements ISend {
         }
     }
 
-    @TargetApi(21)
     private void diagBox(String str1, String str2) {
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog);
@@ -105,29 +103,30 @@ public class send_IMG extends MainActivity implements ISend {
                         // Does something if yes
                     }
                 })
-                /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing hola :V
-                    }
-                })*/
                 .setIcon(android.R.drawable.ic_dialog_info)
                 .show();
     }
 
     public String EncodeImage(Bitmap bmp){
+        if(bmp == null)
+            return "null";
         ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOS);
         return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
     }
 
-    public Bitmap DecodeStr(String str){
-        byte[] decodedBytes = Base64.decode(str, 0);
-        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+    public Bitmap DecodeStr(String str) {
+        try{
+            byte[] decodedBytes = Base64.decode(str, 0);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        }catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     class JSONtask extends AsyncTask<String, String, String>{
 
-        @TargetApi(21)
         @Override
         protected String doInBackground(String... urls) {
             HttpURLConnection connection = null;
